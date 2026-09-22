@@ -22,6 +22,22 @@ _DOMAIN_RE = re.compile(
 # the single source of truth — update sources there, and both the "cp config
 # .toml.example config.toml" workflow and the built-in fallback stay in sync
 # automatically.
+_STATIC_BLOCK = """127.0.0.1 localhost
+127.0.0.1 localhost.localdomain
+127.0.0.1 local
+255.255.255.255 broadcasthost
+::1 localhost
+::1 ip6-localhost
+::1 ip6-loopback
+fe80::1%lo0 localhost
+ff00::0 ip6-localnet
+ff00::0 ip6-mcastprefix
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+ff02::3 ip6-allhosts
+0.0.0.0 0.0.0.0
+"""
+
 _DEFAULT_CONFIG_FILE = Path(__file__).resolve().parent / "config.toml.example"
 
 
@@ -201,6 +217,11 @@ def extract_domain(rule: str) -> str | None:
     if not rule:
         return None
 
+    if rule.startswith("0.0.0.0 "):
+        domain = rule[8:].strip()
+        if _DOMAIN_RE.match(domain):
+            return domain.lower()
+
     if rule.startswith("||") and "^" in rule:
         domain = rule[2:].split("^")[0]
         if _DOMAIN_RE.match(domain):
@@ -269,7 +290,11 @@ def write_output(
         with tmp_file.open("w", encoding="utf-8") as f:
             f.write(header)
 
+            first = True
             for url, domains in source_data.items():
+                if first:
+                    f.write(_STATIC_BLOCK + "\n")
+                    first = False
                 f.write(f"\n# Source: {url}\n\n")
                 for domain in domains:
                     # prefix is added directly during file writing
