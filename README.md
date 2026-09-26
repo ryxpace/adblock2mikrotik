@@ -34,6 +34,7 @@ cp .github/config.toml config.toml
 ## Features
 
 - Converts `||example.com^` rules to MikroTik DNS adlist format (`0.0.0.0 example.com`)
+- Accepts hosts-format input (`0.0.0.0 domain`) unchanged; non-`0.0.0.0` addresses are ignored
 - Deduplicates entries across all sources
 - Validates domains against RFC label rules (rejects double-dots, leading/trailing hyphens)
 - Pre-filters comments and empty lines for efficiency
