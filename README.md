@@ -4,19 +4,32 @@ Convert ad-blocking filter lists to MikroTik RouterOS DNS adlist format.
 
 > [!TIP]
 > Ready-to-use URL for RouterOS:
-> `https://raw.githubusercontent.com/eugenescodes/adblock2mikrotik/refs/heads/main/hosts.txt`
+> `https://raw.githubusercontent.com/ryxpace/adblock2mikrotik/refs/heads/main/hosts.txt`
 
 ## Overview
 
-Transforms popular ad-blocking filter lists (Hagezi) into a compact format compatible with the MikroTik RouterOS 7.15+ DNS adlist feature.
+Transforms popular ad-blocking filter lists (like the Hagezi lists) into a compact format compatible with the MikroTik RouterOS 7.15+ DNS adlist feature.
 Optimized for memory-constrained low-resource devices like the [RB951Ui-2nD hAP](https://mikrotik.com/product/RB951Ui-2nD) (which has 16 MB storage).
 
 ### Sources
 
 | List | Description |
 | --- | --- |
-| [Hagezi Multi PRO mini](https://github.com/hagezi/dns-blocklists?tab=readme-ov-file#ledger-multi-pro-mini-recommended-for-browsermobile-adblockers-) | General ad/tracker blocking |
-| [Hagezi TIF mini](https://github.com/hagezi/dns-blocklists?tab=readme-ov-file#closed_lock_with_key-threat-intelligence-feeds---mini-version-) | Threat intelligence feeds |
+| [Hagezi Multi PRO mini](https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/pro.mini.txt) | General ad/tracker blocking |
+| [Hagezi TIF mini](https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/tif.mini.txt) | Threat intelligence feeds |
+| [Hagezi NSFW](https://raw.githubusercontent.com/hagezi/dns-blocklists/refs/heads/main/adblock/nsfw.txt) | Adult content |
+| [Hagezi Gambling mini](https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/gambling.mini.txt) | Gambling and betting sites |
+| [Hagezi Popup Ads](https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/popupads.txt) | Popup and redirect ad chains |
+| [StevenBlack hosts](https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts) | Unified hosts file (defaults) |
+| [StevenBlack alternates — fakenews, gambling, porn](https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews-gambling-porn-only/hosts) | News, gambling and adult sites |
+
+The list above is what the scheduled workflow converts — it lives in [`.github/config.toml`](.github/config.toml) and is copied to `config.toml` before each run. To reproduce `hosts.txt` locally, copy that file too:
+
+```bash
+cp .github/config.toml config.toml
+```
+
+`config.toml.example` stays a minimal two-list template for your own experiments.
 
 ## Features
 
@@ -37,7 +50,7 @@ Optimized for memory-constrained low-resource devices like the [RB951Ui-2nD hAP]
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Clone and run
-git clone https://github.com/eugenescodes/adblock2mikrotik
+git clone https://github.com/ryxpace/adblock2mikrotik
 cd adblock2mikrotik
 uv run convert_to_hosts.py
 ```
@@ -76,7 +89,7 @@ After running either option, `hosts.txt` is created in the current directory.
 ### Add adlist via URL
 
 ```routeros
-/ip/dns/adlist add url=https://raw.githubusercontent.com/eugenescodes/adblock2mikrotik/refs/heads/main/hosts.txt ssl-verify=no
+/ip/dns/adlist add url=https://raw.githubusercontent.com/ryxpace/adblock2mikrotik/refs/heads/main/hosts.txt ssl-verify=no
 ```
 
 ### Optional: enable SSL verification
@@ -86,7 +99,7 @@ If you want to use `ssl-verify=yes`, you can download and import [CA certificate
 ```routeros
 /tool fetch url=https://curl.se/ca/cacert.pem
 /certificate import file-name=cacert.pem passphrase=""
-/ip/dns/adlist add url=https://raw.githubusercontent.com/eugenescodes/adblock2mikrotik/refs/heads/main/hosts.txt ssl-verify=yes
+/ip/dns/adlist add url=https://raw.githubusercontent.com/ryxpace/adblock2mikrotik/refs/heads/main/hosts.txt ssl-verify=yes
 ```
 
 See also the official MikroTik documentation:
@@ -96,7 +109,7 @@ See also the official MikroTik documentation:
 
 ## Configuration
 
-By default, the script uses few pre-configured Hagezi filter lists (see [Sources](#sources) above). These defaults live in `config.toml.example` — the same file you copy to customize your own sources, so there's a single place to look. You can override them by creating a `config.toml` file:
+By default, the script uses the pre-configured filter lists (see [Sources](#sources) above). The workflow's list is `.github/config.toml`; `config.toml.example` is a minimal two-list template. Copy either to `config.toml` to customize your own sources:
 
 ### Customize sources
 
@@ -193,7 +206,7 @@ uv run pytest -v
 
 ## Contributing
 
-1. Open a [GitHub issue](https://github.com/eugenescodes/adblock2mikrotik/issues) to discuss major changes before starting work.
+1. Open a [GitHub issue](https://github.com/ryxpace/adblock2mikrotik/issues) to discuss major changes before starting work.
 2. Fork the repo and create a feature branch: `git checkout -b feature/your-feature`
 3. Make your changes and run the checks: `uv run ruff check .`, `uv run mypy .`, and `uv run pytest -v`
 4. Commit with a clear message and push to your fork.
@@ -205,6 +218,7 @@ uv run pytest -v
 
 ## Acknowledgments
 
+- [eugenescodes](https://github.com/ryxpace/adblock2mikrotik/commits?author=eugenescodes) — original author of this project
 - [Hagezi](https://github.com/hagezi/dns-blocklists) for maintaining comprehensive filter lists
 - MikroTik for the DNS adlist feature in RouterOS 7.15+
 
