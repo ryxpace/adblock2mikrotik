@@ -46,6 +46,7 @@ build/
  
 # Local configuration (copy from config.toml.example)
 config.toml
+!.github/config.toml
 
 # -----------------------
 # Rust
