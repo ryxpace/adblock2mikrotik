@@ -151,11 +151,13 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-          if [[ -n $(git status --porcelain hosts.txt) ]]; then
+          # timestamp changes every run; commit only when the list changes
+          if git diff --quiet --ignore-matching-lines='^# Last modified:' -- hosts.txt; then
+            echo "No new list entries — skipping commit."
+            git checkout -- hosts.txt
+          else
             git add hosts.txt
             git commit -m "Update hosts.txt via schedule"
             git pull --rebase origin main
             git push origin main
-          else
-            echo "No changes to commit."
           fi
