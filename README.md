@@ -9,7 +9,7 @@ Convert ad-blocking filter lists to MikroTik RouterOS DNS adlist format.
 ## Overview
 
 Transforms popular ad-blocking filter lists (like the Hagezi lists) into a compact format compatible with the MikroTik RouterOS 7.15+ DNS adlist feature.
-Optimized for memory-constrained low-resource devices like the [RB951Ui-2nD hAP](https://mikrotik.com/product/RB951Ui-2nD) (which has 16 MB storage).
+Optimized for memory-constrained low-resource devices like the [hEX RB750Gr3](https://mikrotik.com/product/RB750Gr3) (which has 256 MB RAM and 16 MB storage).
 
 ### Sources
 
