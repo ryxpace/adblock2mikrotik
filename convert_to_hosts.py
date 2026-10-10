@@ -226,6 +226,9 @@ def extract_domain(rule: str) -> str | None:
         domain = rule[2:].split("^")[0]
         if _DOMAIN_RE.match(domain):
             return domain.lower()
+
+    if _DOMAIN_RE.match(rule):
+        return rule.lower()
     return None
 
 
