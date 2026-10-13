@@ -9,21 +9,18 @@ Convert ad-blocking filter lists to MikroTik RouterOS DNS adlist format.
 ## Overview
 
 Transforms popular ad-blocking filter lists (like the Hagezi lists) into a compact format compatible with the MikroTik RouterOS 7.15+ DNS adlist feature.
-Optimized for memory-constrained low-resource devices like the [hEX RB750Gr3](https://mikrotik.com/product/RB750Gr3) (which has 256 MB RAM and 16 MB storage).
 
 ### Sources
 
 | List | Description |
 | --- | --- |
 | [Hagezi Multi PRO mini](https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/pro.mini.txt) | General ad/tracker blocking |
-| [Hagezi TIF mini](https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/tif.mini.txt) | Threat intelligence feeds |
-| [Hagezi NSFW](https://raw.githubusercontent.com/hagezi/dns-blocklists/refs/heads/main/adblock/nsfw.txt) | Adult content |
-| [Hagezi Gambling mini](https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/gambling.mini.txt) | Gambling and betting sites |
-| [Hagezi Popup Ads](https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/popupads.txt) | Popup and redirect ad chains |
-| [StevenBlack hosts](https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts) | Unified hosts file (defaults) |
-| [StevenBlack alternates — fakenews, gambling, porn](https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews-gambling-porn-only/hosts) | News, gambling and adult sites |
+| [StevenBlack hosts](https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts) | Unified hosts blocklist |
+| [oisd small](https://small.oisd.nl) | General blocklist (small variant) |
+| [1Hosts Lite](https://badmojr.github.io/1Hosts/Lite/hosts.txt) | General blocking (Lite variant) |
+| [AdGuard SDNS Filter](https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt) | AdGuard DNS filter |
 
-The list above is what the scheduled workflow converts — it lives in [`.github/config.toml`](.github/config.toml) and is copied to `config.toml` before each run. To reproduce `hosts.txt` locally, copy that file too:
+The list above is what the scheduled workflow converts. It lives in [`.github/config.toml`](.github/config.toml) and is copied to `config.toml` before each run. To reproduce `hosts.txt` locally, copy that file too:
 
 ```bash
 cp .github/config.toml config.toml
@@ -35,16 +32,17 @@ cp .github/config.toml config.toml
 
 - Converts `||example.com^` rules to MikroTik DNS adlist format (`0.0.0.0 example.com`)
 - Accepts hosts-format input (`0.0.0.0 domain`) unchanged; non-`0.0.0.0` addresses are ignored
+- Accepts domain-only entries (`example.com`) unchanged
 - Deduplicates entries across all sources
 - Validates domains against RFC label rules (rejects double-dots, leading/trailing hyphens)
 - Pre-filters comments and empty lines for efficiency
-- Writes `hosts.txt` atomically — a failed or interrupted run never leaves a partial file in place
-- Exits non-zero, writing nothing, if any configured source can't be fetched or if the result would be empty — a narrow or stale list is never published
+- Writes `hosts.txt` atomically. A failed or interrupted run keeps the previous file intact
+- Exits non-zero and writes no file if any configured source fails to fetch or if the result would be empty, so only a complete list gets published
 - Compatible with RouterOS 7.15+
 
 ## Usage
 
-### Option 1 — uv (recommended)
+### Option 1 - uv (recommended)
 
 ```bash
 # Install uv if not already installed (macOS / Linux)
@@ -56,9 +54,9 @@ cd adblock2mikrotik
 uv run convert_to_hosts.py
 ```
 
-`uv run` automatically creates a virtual environment and installs dependencies — no manual setup required.
+`uv run` automatically creates a virtual environment and installs dependencies. No manual setup required.
 
-### Option 2 — Docker
+### Option 2 - Docker
 
 ```bash
 docker build -t adblock2mikrotik .
@@ -73,7 +71,7 @@ docker run --rm -v "${PWD}:/output" adblock2mikrotik
 > [!NOTE]
 > The `-v` flag mounts your current directory into the container at `/output`.
 > The script writes `hosts.txt` to `/output`, so the file appears directly
-> in your current directory on the host — no manual copying needed.
+> in your current directory on the host. No manual copying needed.
 >
 > On Linux, the container runs as its own non-root user, which cannot write to
 > your bind-mounted directory unless the UIDs match. `--user $(id -u):$(id -g)`
@@ -85,7 +83,7 @@ docker run --rm -v "${PWD}:/output" adblock2mikrotik
 
 After running either option, `hosts.txt` is created in the current directory.
 
-## MikroTik RouterOS Integration
+## MikroTik RouterOS integration
 
 ### Add adlist via URL
 
@@ -136,10 +134,10 @@ urls = [
 uv run convert_to_hosts.py
 ```
 
-The script loads sources from `config.toml` in the current working directory. If that file does not exist, it falls back to `config.toml.example`, bundled alongside the script. If `config.toml` exists but has no usable `[sources] urls` — malformed TOML, a value that isn't a list of URL strings, or an empty list — the script reports an error and exits with a non-zero status without writing `hosts.txt`: a typo in your own config is never silently replaced by the defaults. The same applies if the bundled fallback is itself unusable.
+The script loads sources from `config.toml` in the current working directory. If that file does not exist, it falls back to `config.toml.example`, bundled alongside the script. If `config.toml` exists but has no usable `[sources] urls` (malformed TOML, a value that isn't a list of URL strings, or an empty list), the script reports an error and exits with a non-zero status without writing `hosts.txt`: a typo in your own config is never silently replaced by the defaults. The same applies if the bundled fallback is itself unusable.
 
 > [!NOTE]
-> `config.toml.example` must stay in the same directory as `convert_to_hosts.py` — it's the built-in fallback, not just documentation.
+> `config.toml.example` must stay in the same directory as `convert_to_hosts.py`. It's the built-in fallback, not just documentation.
 
 #### Using a custom `config.toml` with Docker
 
@@ -154,9 +152,9 @@ docker run --rm --user $(id -u):$(id -g) \
 
 ### Finding additional filter lists
 
-You can use any blocklist in AdBlock format (`||domain.com^` syntax)
+You can use any blocklist in AdBlock (`||domain.com^`), hosts (`0.0.0.0 domain.com`), or domain-only (`domain.com`) format.
 
-For more Hagezi lists, visit the [Hagezi DNS blocklists repository](https://github.com/hagezi/dns-blocklists)
+For more Hagezi lists, visit the [Hagezi DNS blocklists repository](https://github.com/hagezi/dns-blocklists).
 
 ## Development
 
@@ -219,8 +217,7 @@ uv run pytest -v
 
 ## Acknowledgments
 
-- [eugenescodes](https://github.com/ryxpace/adblock2mikrotik/commits?author=eugenescodes) — original author of this project
-- [Hagezi](https://github.com/hagezi/dns-blocklists) for maintaining comprehensive filter lists
+- [eugenescodes](https://github.com/eugenescodes) - original author of this project
 - MikroTik for the DNS adlist feature in RouterOS 7.15+
 
 ---
