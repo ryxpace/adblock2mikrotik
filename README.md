@@ -4,7 +4,9 @@ Convert ad-blocking filter lists to MikroTik RouterOS DNS adlist format.
 
 > [!TIP]
 > Ready-to-use URL for RouterOS:
-> `https://raw.githubusercontent.com/ryxpace/adblock2mikrotik/refs/heads/main/hosts.txt`
+> ```
+> https://raw.githubusercontent.com/ryxpace/adblock2mikrotik/refs/heads/main/hosts.txt
+> ```
 
 ## Overview
 
@@ -20,10 +22,10 @@ Transforms popular ad-blocking filter lists (like the Hagezi lists) into a compa
 | [1Hosts Lite](https://badmojr.github.io/1Hosts/Lite/hosts.txt) | General blocking (Lite variant) |
 | [AdGuard SDNS Filter](https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt) | AdGuard DNS filter |
 
-The list above is what the scheduled workflow converts. It lives in [`.github/config.toml`](.github/config.toml) and is copied to `config.toml` before each run. To reproduce `hosts.txt` locally, copy that file too:
+The list above is what the scheduled workflow converts. It lives in [`.github/config.toml`](.github/config.toml) and is passed directly to the script. To reproduce `hosts.txt` locally, pass the same file:
 
 ```bash
-cp .github/config.toml config.toml
+uv run convert_to_hosts.py .github/config.toml
 ```
 
 `config.toml.example` stays a minimal two-list template for your own experiments.
@@ -131,10 +133,10 @@ urls = [
 - Run the converter:
 
 ```bash
-uv run convert_to_hosts.py
+uv run convert_to_hosts.py [config.toml]
 ```
 
-The script loads sources from `config.toml` in the current working directory. If that file does not exist, it falls back to `config.toml.example`, bundled alongside the script. If `config.toml` exists but has no usable `[sources] urls` (malformed TOML, a value that isn't a list of URL strings, or an empty list), the script reports an error and exits with a non-zero status without writing `hosts.txt`: a typo in your own config is never silently replaced by the defaults. The same applies if the bundled fallback is itself unusable.
+The script loads sources from the given config file, or `config.toml` in the current working directory when no argument is passed. If that file does not exist, it falls back to `config.toml.example`, bundled alongside the script. If `config.toml` exists but has no usable `[sources] urls` (malformed TOML, a value that isn't a list of URL strings, or an empty list), the script reports an error and exits with a non-zero status without writing `hosts.txt`: a typo in your own config is never silently replaced by the defaults. The same applies if the bundled fallback is itself unusable.
 
 > [!NOTE]
 > `config.toml.example` must stay in the same directory as `convert_to_hosts.py`. It's the built-in fallback, not just documentation.
