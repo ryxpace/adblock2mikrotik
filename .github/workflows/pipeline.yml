@@ -140,11 +140,8 @@ jobs:
       - name: Install dependencies
         run: uv sync
 
-      - name: Install CI source list
-        run: cp .github/config.toml config.toml
-
       - name: Run conversion script
-        run: uv run convert_to_hosts.py
+        run: uv run convert_to_hosts.py .github/config.toml
 
       - name: Commit and push hosts.txt
         run: |

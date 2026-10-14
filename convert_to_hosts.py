@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 import time
 import tomllib
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -19,9 +20,8 @@ _DOMAIN_RE = re.compile(
 
 # Default sources are loaded from config.toml.example (see load_config below)
 # instead of being duplicated as a Python literal here. config.toml.example is
-# the single source of truth — update sources there, and both the "cp config
-# .toml.example config.toml" workflow and the built-in fallback stay in sync
-# automatically.
+# the single source of truth for local runs. The built-in fallback stays in
+# sync automatically.
 _STATIC_BLOCK = """127.0.0.1 localhost
 127.0.0.1 localhost.localdomain
 127.0.0.1 local
@@ -314,7 +314,8 @@ def write_output(
 
 def main() -> None:
     start_time = time.monotonic()
-    urls = load_config("config.toml")
+    config_file = sys.argv[1] if len(sys.argv) > 1 else "config.toml"
+    urls = load_config(config_file)
 
     if not urls:
         # load_config has already reported why the source list is unusable;

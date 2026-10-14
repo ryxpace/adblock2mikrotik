@@ -1,4 +1,4 @@
-# Source list for the GitHub Action (copied to ./config.toml by the workflow)
+# Source list for the GitHub Action (passed to the script as .github/config.toml)
 
 [sources]
 urls = [
