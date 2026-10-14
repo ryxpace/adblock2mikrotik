@@ -4,6 +4,7 @@ Convert ad-blocking filter lists to MikroTik RouterOS DNS adlist format.
 
 > [!TIP]
 > Ready-to-use URL for RouterOS:
+>
 > ```
 > https://raw.githubusercontent.com/ryxpace/adblock2mikrotik/refs/heads/main/hosts.txt
 > ```
